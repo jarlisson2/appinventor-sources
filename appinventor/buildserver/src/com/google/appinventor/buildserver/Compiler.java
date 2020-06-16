@@ -470,6 +470,7 @@ public final class Compiler {
     int n = 0;
     for (String type : nativeLibsNeeded.keySet()) {
       n += nativeLibsNeeded.get(type).size();
+      System.out.println("Type = " + type);
     }
 
     System.out.println("Native Libraries needed, n = " + n);
@@ -2125,6 +2126,7 @@ public final class Compiler {
 
     try {
       for (String type : nativeLibsNeeded.keySet()) {
+        System.out.println("Type: " + type);
         for (String lib : nativeLibsNeeded.get(type)) {
           boolean isV7a = lib.endsWith(ComponentDescriptorConstants.ARMEABI_V7A_SUFFIX);
           boolean isV8a = lib.endsWith(ComponentDescriptorConstants.ARM64_V8A_SUFFIX);
@@ -2151,6 +2153,7 @@ public final class Compiler {
 
           String sourcePath = "";
           String pathSuffix = RUNTIME_FILES_DIR + sourceDirName + ZIPSLASH + lib;
+          System.out.println("Path: " + pathSuffix);
 
           if (simpleCompTypes.contains(type)) {
             sourcePath = getResource(pathSuffix);
@@ -2162,7 +2165,6 @@ public final class Compiler {
             userErrors.print(String.format(ERROR_IN_STAGE, "Native Code"));
             return false;
           }
-
           Files.copy(new File(sourcePath), new File(targetDir, lib));
         }
       }
@@ -2233,6 +2235,7 @@ public final class Compiler {
             String pathSuffix = RUNTIME_FILES_DIR + assetName;
             sourcePath = getResource(pathSuffix);
           } else if (extCompTypes.contains(type)) {
+            System.out.println("External: " + type);
             final String extCompDir = getExtCompDirPath(type);
             sourcePath = getExtAssetPath(extCompDir, assetName);
             // If targetDir's location is changed here, you must update Form.java in components to
@@ -2243,7 +2246,7 @@ public final class Compiler {
             userErrors.print(String.format(ERROR_IN_STAGE, "Assets"));
             return false;
           }
-
+          System.out.println("Source" + sourcePath);
           Files.copy(new File(sourcePath), new File(targetDir, assetName));
         }
       }

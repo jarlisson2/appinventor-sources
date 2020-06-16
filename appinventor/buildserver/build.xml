@@ -70,6 +70,7 @@
       <fileset dir="${lib.dir}/leaflet/assets" includes="*"/>
       <!-- Component/extension assets (for testing) -->
       <fileset dir="${appinventor.dir}/components/src" includes="**/assets/*"/>
+      <fileset dir="${appinventor.dir}/components/src" includes="**/lib/*"/>
     </copy>
     <!-- Component library dependencies -->
     <copy todir="${classes.files.dir}">

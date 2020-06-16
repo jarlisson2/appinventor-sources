@@ -217,6 +217,8 @@ public class ComponentServiceImpl extends OdeRemoteServiceServlet
       }
     }
 
+    response.setMessage("Escrevendo");
+
     // Write new extension files
     List<ProjectNode> compNodes = new ArrayList<>();
     for (Map.Entry<String, byte[]> entry : contents.entrySet()) {
