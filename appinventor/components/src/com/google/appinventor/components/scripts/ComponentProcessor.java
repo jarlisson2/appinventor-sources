@@ -19,12 +19,17 @@ import com.google.appinventor.components.annotations.UsesAssets;
 import com.google.appinventor.components.annotations.UsesLibraries;
 import com.google.appinventor.components.annotations.UsesNativeLibraries;
 import com.google.appinventor.components.annotations.UsesPermissions;
+import com.google.appinventor.components.annotations.UsesProvider;
 import com.google.appinventor.components.annotations.UsesActivities;
+import com.google.appinventor.components.annotations.UsesServices;
+import com.google.appinventor.components.annotations.UsesInfoMetaData;
 import com.google.appinventor.components.annotations.UsesBroadcastReceivers;
 import com.google.appinventor.components.annotations.androidmanifest.ActivityElement;
+import com.google.appinventor.components.annotations.androidmanifest.ServiceElement;
 import com.google.appinventor.components.annotations.androidmanifest.ReceiverElement;
 import com.google.appinventor.components.annotations.androidmanifest.IntentFilterElement;
 import com.google.appinventor.components.annotations.androidmanifest.MetaDataElement;
+import com.google.appinventor.components.annotations.androidmanifest.ProviderElement;
 import com.google.appinventor.components.annotations.androidmanifest.ActionElement;
 import com.google.appinventor.components.annotations.androidmanifest.DataElement;
 import com.google.appinventor.components.annotations.androidmanifest.CategoryElement;
@@ -137,7 +142,10 @@ public abstract class ComponentProcessor extends AbstractProcessor {
       "com.google.appinventor.components.annotations.UsesAssets",
       "com.google.appinventor.components.annotations.UsesLibraries",
       "com.google.appinventor.components.annotations.UsesNativeLibraries",
+      "com.google.appinventor.components.annotations.UsesInfoMetaData",
       "com.google.appinventor.components.annotations.UsesActivities",
+      "com.google.appinventor.components.annotations.UsesProvider",
+      "com.google.appinventor.components.annotations.UsesServices",
       "com.google.appinventor.components.annotations.UsesBroadcastReceivers",
       "com.google.appinventor.components.annotations.UsesPermissions");
 
@@ -1150,15 +1158,23 @@ public abstract class ComponentProcessor extends AbstractProcessor {
         updateWithNonEmptyValue(componentInfo.nativeLibraries, nativeLibrary);
       }
       for (String v7aLibrary : usesNativeLibraries.v7aLibraries().split(",")) {
-        updateWithNonEmptyValue(componentInfo.nativeLibraries, v7aLibrary.trim() + ARMEABI_V7A_SUFFIX);
+        String trimmedValue = v7aLibrary.trim();
+        if (!trimmedValue.isEmpty()) {
+          updateWithNonEmptyValue(componentInfo.nativeLibraries, v7aLibrary.trim() + ARMEABI_V7A_SUFFIX);
+        }
       }
       for (String v8aLibrary : usesNativeLibraries.v8aLibraries().split(",")) {
-        updateWithNonEmptyValue(componentInfo.nativeLibraries, v8aLibrary.trim() + ARM64_V8A_SUFFIX);
+        String trimmedValue = v8aLibrary.trim();
+        if (!trimmedValue.isEmpty()) {
+          updateWithNonEmptyValue(componentInfo.nativeLibraries, v8aLibrary.trim() + ARM64_V8A_SUFFIX);
+        }
       }
       for (String x8664Library : usesNativeLibraries.x86_64Libraries().split(",")) {
-        updateWithNonEmptyValue(componentInfo.nativeLibraries, x8664Library.trim() + X86_64_SUFFIX);
+        String trimmedValue = x8664Library.trim();
+        if (!trimmedValue.isEmpty()) {
+          updateWithNonEmptyValue(componentInfo.nativeLibraries, x8664Library.trim() + X86_64_SUFFIX);
+        }
       }
-
     }
 
     // Gather required files.
@@ -1170,11 +1186,64 @@ public abstract class ComponentProcessor extends AbstractProcessor {
     }
 
     // Gather the required activities and build their element strings.
+    UsesInfoMetaData usesMeta = element.getAnnotation(UsesInfoMetaData.class);
+    if (usesMeta != null) {
+      try {
+        for (MetaDataElement me : usesMeta.metaDataElements()) {
+          updateWithNonEmptyValue(componentInfo.activities, metaDataElementToString(me));
+        }
+      } catch (IllegalAccessException e) {
+        messager.printMessage(Diagnostic.Kind.ERROR, "IllegalAccessException when gathering " +
+            "activity attributes and subelements for component " + componentInfo.name);
+        throw new RuntimeException(e);
+      } catch (InvocationTargetException e) {
+        messager.printMessage(Diagnostic.Kind.ERROR, "InvocationTargetException when gathering " +
+            "activity attributes and subelements for component " + componentInfo.name);
+        throw new RuntimeException(e);
+      }
+    }
+
+    // Gather the required activities and build their element strings.
     UsesActivities usesActivities = element.getAnnotation(UsesActivities.class);
     if (usesActivities != null) {
       try {
         for (ActivityElement ae : usesActivities.activities()) {
           updateWithNonEmptyValue(componentInfo.activities, activityElementToString(ae));
+        }
+      } catch (IllegalAccessException e) {
+        messager.printMessage(Diagnostic.Kind.ERROR, "IllegalAccessException when gathering " +
+            "activity attributes and subelements for component " + componentInfo.name);
+        throw new RuntimeException(e);
+      } catch (InvocationTargetException e) {
+        messager.printMessage(Diagnostic.Kind.ERROR, "InvocationTargetException when gathering " +
+            "activity attributes and subelements for component " + componentInfo.name);
+        throw new RuntimeException(e);
+      }
+    }
+
+    UsesProvider usesProvider = element.getAnnotation(UsesProvider.class);
+    if (usesProvider != null) {
+      try {
+        for (ProviderElement pr : usesProvider.provider()) {
+          updateWithNonEmptyValue(componentInfo.activities, providerElementToString(pr));
+        }
+      } catch (IllegalAccessException e) {
+        messager.printMessage(Diagnostic.Kind.ERROR, "IllegalAccessException when gathering " +
+            "activity attributes and subelements for component " + componentInfo.name);
+        throw new RuntimeException(e);
+      } catch (InvocationTargetException e) {
+        messager.printMessage(Diagnostic.Kind.ERROR, "InvocationTargetException when gathering " +
+            "activity attributes and subelements for component " + componentInfo.name);
+        throw new RuntimeException(e);
+      }
+    }
+
+    // Gather the required activities and build their element strings.
+    UsesServices usesServices = element.getAnnotation(UsesServices.class);
+    if (usesServices != null) {
+      try {
+        for (ServiceElement se : usesServices.services()) {
+          updateWithNonEmptyValue(componentInfo.activities, serviceElementToString(se));
         }
       } catch (IllegalAccessException e) {
         messager.printMessage(Diagnostic.Kind.ERROR, "IllegalAccessException when gathering " +
@@ -1353,6 +1422,37 @@ public abstract class ComponentProcessor extends AbstractProcessor {
 
     // Finally, we close the <activity> element and create its String.
     return elementString.append("    </activity>\\n").toString();
+  }
+
+  // Transform an @ProviderElement into an XML element String for use later
+  // in creating AndroidManifest.xml.
+  private static String providerElementToString(ProviderElement element)
+      throws IllegalAccessException, InvocationTargetException {
+    // First, we build the <provider> element's opening tag including any
+    // receiver element attributes.
+    StringBuilder elementString = new StringBuilder("    <provider ");
+    elementString.append(elementAttributesToString(element));
+    elementString.append(">\\n");
+    // Finally, we close the <service> element and create its String.
+    return elementString.append("    </provider>\\n").toString();
+  }
+
+  // Transform an @ServiceElement into an XML element String for use later
+  // in creating AndroidManifest.xml.
+  private static String serviceElementToString(ServiceElement element)
+      throws IllegalAccessException, InvocationTargetException {
+    // First, we build the <service> element's opening tag including any
+    // receiver element attributes.
+    StringBuilder elementString = new StringBuilder("    <service ");
+    elementString.append(elementAttributesToString(element));
+    elementString.append(">\\n");
+
+    // Now, we collect any <service> subelements.
+    elementString.append(subelementsToString(element.metaDataElements()));
+    elementString.append(subelementsToString(element.intentFilters()));
+
+    // Finally, we close the <service> element and create its String.
+    return elementString.append("    </service>\\n").toString();
   }
 
   // Transform a @ReceiverElement into an XML element String for use later

@@ -162,6 +162,8 @@ public class ExternalComponentGenerator {
     JSONArray buildInfos = new JSONArray();
     for (ExternalComponentInfo info : extensions) {
       JSONObject componentBuildInfo = info.buildInfo;
+      copyNatives(packageName, info.buildInfo);
+
       try {
         JSONArray librariesNeeded = componentBuildInfo.getJSONArray("libraries");
         for (int j = 0; j < librariesNeeded.length(); ++j) {
@@ -203,6 +205,75 @@ public class ExternalComponentGenerator {
     } finally {
       if (extensionBuildInfoFile != null) {
         extensionBuildInfoFile.close();
+      }
+    }
+  }
+
+  private static void copyNatives(String packageName, JSONObject componentDescriptor)
+      throws IOException, JSONException {
+    JSONArray assets = componentDescriptor.optJSONArray("native");
+    System.out.println(assets);
+    if (assets == null) {
+      return;
+    }
+
+    // Get natives source directory
+    String packagePath = packageName.replace('.', File.separatorChar);
+    File sourceDir = new File(externalComponentsDirPath + File.separator + ".." + File.separator + ".." + File.separator
+        + "src" + File.separator + packagePath);
+    File assetSrcDir = new File(sourceDir, "libsNatives");
+    if (!assetSrcDir.exists() || !assetSrcDir.isDirectory()) {
+      return;
+    }
+
+    // Get natives dest directory
+    File destDir = new File(externalComponentsDirPath + File.separator + packageName + File.separator);
+    File assetDestDir =  new File(destDir, "libsNatives");
+    ensureFreshDirectory(assetDestDir.getPath(), "Unable to delete the assets directory for the extension.");
+
+    // Copy natives
+    for (int i = 0; i < assets.length(); i++) {
+      String lib = assets.getString(i);
+
+      String ARMEABI_V7A_SUFFIX = "-v7a";
+      String ARM64_V8A_SUFFIX = "-v8a";
+      String X86_64_SUFFIX = "-x8a";
+
+      String ARMEABI_DIR_NAME = "armeabi";
+      String ARMEABI_V7A_DIR_NAME = "armeabi-v7a";
+      String ARM64_V8A_DIR_NAME = "arm64-v8a";
+      String X86_64_DIR_NAME = "x86_64";
+
+      boolean isV7a = lib.endsWith(ARMEABI_V7A_SUFFIX);
+      boolean isV8a = lib.endsWith(ARM64_V8A_SUFFIX);
+      boolean isx8664 = lib.endsWith(X86_64_SUFFIX);
+
+      String sourceDirName;
+      if (isV7a) {
+        sourceDirName = ARMEABI_V7A_DIR_NAME;
+        lib = lib.substring(0, lib.length() - ARMEABI_V7A_SUFFIX.length());
+      } else if (isV8a) {
+        sourceDirName = ARM64_V8A_DIR_NAME;
+        lib = lib.substring(0, lib.length() - ARM64_V8A_SUFFIX.length());
+      } else if (isx8664) {
+        sourceDirName = X86_64_DIR_NAME;
+        lib = lib.substring(0, lib.length() - X86_64_SUFFIX.length());
+      } else {
+        sourceDirName = ARMEABI_DIR_NAME;
+      }
+
+      if (!lib.isEmpty()) {
+        File nativeAssets = new File(assetSrcDir, sourceDirName);
+        File srcNative = new File(nativeAssets, lib);
+        if (srcNative.exists()) {
+          File nativeAssetsDest = new File(assetDestDir, sourceDirName);
+          File srcNativeDest = new File(nativeAssetsDest, lib);
+          ensureDirectory(srcNativeDest.getParent(), "Unable to create directory " + srcNativeDest.getParent());
+          System.out.println("Extensions : " + "Copying file native " + nativeAssets.getAbsolutePath());
+          copyFile(srcNative.getAbsolutePath(), srcNativeDest.getAbsolutePath());
+        } else {
+          System.out.println("Extensions : Skipping missing native " + lib);
+        }
       }
     }
   }
