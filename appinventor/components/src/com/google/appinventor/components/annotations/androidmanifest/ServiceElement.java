@@ -146,4 +146,6 @@ public @interface ServiceElement {
      */
     String process() default "";
 
+    String stopWithTask() default "";
+
 }
